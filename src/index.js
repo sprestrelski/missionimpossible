@@ -17,7 +17,6 @@
 
 import '@tensorflow/tfjs-backend-webgl';
 import * as mpHands from '@mediapipe/hands';
-
 import * as tfjsWasm from '@tensorflow/tfjs-backend-wasm';
 
 tfjsWasm.setWasmPaths(
@@ -33,6 +32,7 @@ import {setupStats} from './shared/stats_panel';
 import {setBackendAndEnvFlags} from './shared/util';
 
 let detector, camera, stats;
+let score = 0;
 let startInferenceTime, numInferences = 0;
 let inferenceTimeSum = 0, lastPanelUpdate = 0;
 let rafId;
@@ -119,7 +119,8 @@ var past_pos_x, curr_pos_x = 0
 var past_pos_y, curr_pos_y = 0
 var past_pos_z, curr_pos_z = 0
 const handStatusDiv = document.getElementById("hand-status");
-var soundPlayer = new Audio('https://soundbible.com/mp3/glass_ping-Go445-1207030150.mp3');
+const scoreDiv = document.getElementById("points");
+
 async function renderResult() {
   if (camera.video.readyState < 2) {
     await new Promise((resolve) => {
@@ -187,6 +188,11 @@ async function renderResult() {
         direction = "moving";
         handStatusDiv.classList.add("active");
         handStatusDiv.innerHTML = "Petting in Progress"
+
+        if (grassStatusDiv.classList.contains("active")) { // Check if grass is detected
+          score += 1;
+          scoreDiv.innerHTML = `Score: ${score}`;
+        }
       } else {
         direction = "not moving"
         handStatusDiv.innerHTML = "Petulantly Patient..."
@@ -228,11 +234,17 @@ async function grassPrediction() {
   const text = response.text();
 
   if (text.includes("YES")) {
-    grassStatusDiv.innerHTML = "Grass detected! :D";
+    const textArray = text.split(" ");
+    const confidenceLevel = parseFloat(textArray[2]);
+    console.log(textArray);
+    grassStatusDiv.innerHTML = `Grass detected (${confidenceLevel}%)! :D`;
     grassStatusDiv.classList.add("active");
   } else {
+    const textArray = text.split(" ");
+    const confidenceLevel = parseFloat(textArray[2]);
+    console.log(textArray);
     grassStatusDiv.classList.remove("active");
-    console.log("No grass detected D:");
+    grassStatusDiv.innerHTML = "No grass detected D:";
   }
   console.log(text);
 }
