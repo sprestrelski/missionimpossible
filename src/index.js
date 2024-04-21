@@ -66,6 +66,7 @@ async function checkGuiUpdate() {
   }
 
   if (STATE.isModelChanged || STATE.isFlagChanged || STATE.isBackendChanged) {
+    console.log(STATE);
     STATE.isModelChanged = true;
 
     window.cancelAnimationFrame(rafId);
@@ -112,7 +113,8 @@ function endEstimateHandsStats() {
 }
 
 var startTime = new Date()
-var endTime;
+var grassTime = new Date()
+var grassIntervalInSeconds = 10
 var past_pos_x, curr_pos_x = 0
 var past_pos_y, curr_pos_y = 0
 var past_pos_z, curr_pos_z = 0
@@ -162,20 +164,24 @@ async function renderResult() {
   
   let velocity_x, velocity_y, velocity_z = 0;
 
+  if ( (new Date() - grassTime) / 1000 > grassIntervalInSeconds) {
+    console.log("grass");
+    grassTime = new Date();
+    //grassPrediction();
+  }
+
   if (hands && hands.length > 0 && !STATE.isModelChanged) {
     camera.drawResults(hands);
 
     let point = hands[0].keypoints3D[0]
     curr_pos_x = point.x
     curr_pos_y = point.y
-    //curr_pos_z = point.z
 
     if ( (new Date() - startTime) / 1000 > intervalTimeInSeconds) {
       velocity_x = Math.abs((curr_pos_x - past_pos_x)) / intervalTimeInSeconds;
       velocity_y = Math.abs((curr_pos_y - past_pos_y)) / intervalTimeInSeconds;
-      //velocity_z = (curr_pos_z - past_pos_z) / intervalTimeInSeconds;
       
-      if (velocity_x > threshold || velocity_y > threshold ) {//|| velocity_z > threshold) {
+      if (velocity_x > threshold || velocity_y > threshold ) {
         direction = "moving";
       } else {
         direction = "not moving"
@@ -191,6 +197,29 @@ async function renderResult() {
     directionOut.innerHTML = `direction: ${direction}`
   }
 }
+
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const fs = require("fs");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+async function grassPrediction() {
+  // For text-and-image input (multimodal), use the gemini-pro-vision model
+  const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+
+  const prompt = "is there grass in this picture? it is okay if it is obscured by a hand. please only answer yes or no. if you are not sure say no.";
+  const image = camera.canvas.toDataURL("image/jpeg");
+  const imagePart = {
+    inlineData: {
+      data: image.split(',')[1], // Extract base64 data
+      mimeType: 'image/jpeg',
+    },
+  };
+
+  const result = await model.generateContent([prompt, imagePart]);
+  const response = await result.response;
+  const text = response.text();
+  console.log(text);
+}
+
 
 async function renderPrediction() {
   await checkGuiUpdate();
