@@ -37,6 +37,38 @@ let startInferenceTime, numInferences = 0;
 let inferenceTimeSum = 0, lastPanelUpdate = 0;
 let rafId;
 
+var initTime = new Date();
+function shareExperience() {
+  const duration = (new Date() - initTime) / 1000;
+  const formattedDuration = formatDuration(duration); 
+
+  const copyText = `I touched grass today!
+  ⏰ Started: ${initTime.toLocaleString()}
+  💫 Duration: ${formattedDuration}
+  🍀 Points: ${score}
+  https://www.peculiargrasstouching.tech/`;
+
+  navigator.clipboard.writeText(copyText).then(() => {
+    alert('Text copied to clipboard!');
+  }).catch((err) => {
+    alert('Failed to copy text: ' + err);
+  });
+}
+
+function formatDuration(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secondsLeft = Math.floor((seconds % 3600) % 60);
+
+  const formattedHours = hours > 0 ? `${hours.toString().padStart(2, '0')}:` : '';
+  const formattedMinutes = minutes.toString().padStart(2, '0');
+  const formattedSeconds = secondsLeft.toString().padStart(2, '0');
+
+  return `${formattedHours}${formattedMinutes}:${formattedSeconds}`;
+}
+
+document.getElementById("shareButton").addEventListener("click", shareExperience);
+
 async function createDetector() {
   switch (STATE.model) {
     case handdetection.SupportedModels.MediaPipeHands:
@@ -248,7 +280,6 @@ async function grassPrediction() {
   }
   console.log(text);
 }
-
 
 async function renderPrediction() {
   await checkGuiUpdate();
