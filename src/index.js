@@ -118,6 +118,7 @@ var grassIntervalInSeconds = 10
 var past_pos_x, curr_pos_x = 0
 var past_pos_y, curr_pos_y = 0
 var past_pos_z, curr_pos_z = 0
+const handStatusDiv = document.getElementById("hand-status");
 var soundPlayer = new Audio('https://soundbible.com/mp3/glass_ping-Go445-1207030150.mp3');
 async function renderResult() {
   if (camera.video.readyState < 2) {
@@ -156,8 +157,8 @@ async function renderResult() {
   // The null check makes sure the UI is not in the middle of changing to a
   // different model. If during model change, the result is from an old model,
   // which shouldn't be rendered.
-  let coordsOut = document.getElementById("coords");
-  let directionOut = document.getElementById("direction");
+  //let coordsOut = document.getElementById("coords");
+  //let directionOut = document.getElementById("direction");
   let intervalTimeInSeconds = 0.5
   let threshold = 0.005  
   let direction = ""
@@ -167,7 +168,7 @@ async function renderResult() {
   if ( (new Date() - grassTime) / 1000 > grassIntervalInSeconds) {
     console.log("grass");
     grassTime = new Date();
-    //grassPrediction();
+    grassPrediction();
   }
 
   if (hands && hands.length > 0 && !STATE.isModelChanged) {
@@ -181,10 +182,14 @@ async function renderResult() {
       velocity_x = Math.abs((curr_pos_x - past_pos_x)) / intervalTimeInSeconds;
       velocity_y = Math.abs((curr_pos_y - past_pos_y)) / intervalTimeInSeconds;
       
+      handStatusDiv.classList.remove("active");
       if (velocity_x > threshold || velocity_y > threshold ) {
         direction = "moving";
+        handStatusDiv.classList.add("active");
+        handStatusDiv.innerHTML = "Petting in Progress"
       } else {
         direction = "not moving"
+        handStatusDiv.innerHTML = "Petulantly Patient..."
       }
 
       past_pos_x = curr_pos_x
@@ -193,19 +198,23 @@ async function renderResult() {
       startTime = new Date();
     }
 
-    coordsOut.innerHTML = `(${curr_pos_x}, ${curr_pos_y}, ${curr_pos_z}), (${velocity_x}, ${velocity_y}, ${velocity_z})`
-    directionOut.innerHTML = `direction: ${direction}`
+    //coordsOut.innerHTML = `(${curr_pos_x}, ${curr_pos_y}, ${curr_pos_z}), (${velocity_x}, ${velocity_y}, ${velocity_z})`
+    //directionOut.innerHTML = `direction: ${direction}`
+  } else {
+    handStatusDiv.classList.remove("active");
+    direction = "not moving"
+    handStatusDiv.innerHTML = "Petulantly Patient..."
   }
 }
 
+const grassStatusDiv = document.getElementById("grass-status");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const fs = require("fs");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 async function grassPrediction() {
   // For text-and-image input (multimodal), use the gemini-pro-vision model
   const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 
-  const prompt = "is there grass in this picture? it is okay if it is obscured by a hand. please only answer yes or no. if you are not sure say no.";
+  const prompt = "is there grass in this photo? output a percentage and a percentage only of how confident you are that this is grass. put it in the form [YES | NO] [NUMBER]%";
   const image = camera.canvas.toDataURL("image/jpeg");
   const imagePart = {
     inlineData: {
@@ -217,6 +226,14 @@ async function grassPrediction() {
   const result = await model.generateContent([prompt, imagePart]);
   const response = await result.response;
   const text = response.text();
+
+  if (text.includes("YES")) {
+    grassStatusDiv.innerHTML = "Grass detected! :D";
+    grassStatusDiv.classList.add("active");
+  } else {
+    grassStatusDiv.classList.remove("active");
+    console.log("No grass detected D:");
+  }
   console.log(text);
 }
 

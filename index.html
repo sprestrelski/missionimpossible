@@ -14,9 +14,12 @@ limitations under the License.
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="index.css">
   <style>
     body {
       margin: 0;
+      background: rgb(223, 174, 238);
+      background: radial-gradient(circle, rgba(223, 174, 238, 1) 0%, rgba(148, 233, 201, 1) 100%);
     }
     #stats {
       position: relative;
@@ -53,8 +56,12 @@ limitations under the License.
         </video>
       </div>
 
-      <div id="direction"></div>
-      <div id="coords"></div>
+      <div id="stats">
+        <div id="hand-status"></div>
+        <div id="grass-status"></div>
+        <div id="points"></div>
+      </div>
+
       <div id="scatter-gl-container-left"></div>
       </div>
       

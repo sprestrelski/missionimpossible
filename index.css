@@ -1,0 +1,30 @@
+#hand-status, #grass-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+  }
+  
+  #hand-status.active, #grass-status.active {
+    background-color: #ddd;
+    border-color: #ddd;
+  }
+  
+  #hand-status {
+    background-color: lightpink;
+  }
+  
+  #hand-status.active {
+    background-color: green;
+  }
+  
+  #grass-status {
+    background-color: lightpink;
+  }
+  
+  #grass-status.active {
+    background-color: green;
+  }
+  
