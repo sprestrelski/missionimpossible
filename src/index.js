@@ -46,7 +46,7 @@ function shareExperience() {
   ⏰ Started: ${initTime.toLocaleString()}
   💫 Duration: ${formattedDuration}
   🍀 Points: ${score}
-  https://www.peculiargrasstouching.tech/`;
+  www.peculiargrasstouching.tech/`;
 
   navigator.clipboard.writeText(copyText).then(() => {
     alert('Text copied to clipboard!');
@@ -146,7 +146,7 @@ function endEstimateHandsStats() {
 
 var startTime = new Date()
 var grassTime = new Date()
-var grassIntervalInSeconds = 10
+var grassIntervalInSeconds = 2
 var past_pos_x, curr_pos_x = 0
 var past_pos_y, curr_pos_y = 0
 var past_pos_z, curr_pos_z = 0
